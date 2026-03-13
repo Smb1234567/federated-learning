@@ -1,220 +1,201 @@
-# 🏦 Federated Learning for Credit Card Fraud Detection
+# Federated Learning for Credit Card Fraud Detection
 
-> A research-grade implementation of Federated Learning applied to fraud detection — where multiple banks collaboratively train a shared model **without ever sharing raw customer data**.
+This repository explores privacy-preserving fraud detection with federated learning. The project starts from the ULB credit card fraud dataset, builds a centralized baseline, trains a federated logistic-regression model with FedAvg, and then pushes the system through progressively harsher stress tests, including synthetic large-scale red-team scenarios.
 
----
+## What This Project Covers
 
-## 📌 What This Project Does
+- Phase 1: data exploration, preprocessing, non-IID bank split, centralized baseline
+- Phase 2: federated learning with FedAvg
+- Phase 3: FedProx comparison and differential privacy experiments
+- Phase 4: stress testing under extreme non-IID, label noise, feature shift, dropout, and Byzantine corruption
+- Phase 5: large-scale synthetic stress experiments
+- Phase 6: deployment-oriented red-team stress testing with robust aggregation comparisons
 
-Traditional fraud detection requires centralising transaction data from all banks into one server — a massive privacy and regulatory risk. This project solves that using **Federated Learning (FL)**:
+The implementation is intentionally simple and transparent. The model is logistic regression built with NumPy, so the focus stays on federated-learning behavior, privacy tradeoffs, and robustness rather than black-box model complexity.
 
-- Each bank trains a local model on its own data
-- Only **model weights** (not raw transactions) are sent to a central server
-- The server aggregates weights using **FedAvg** and sends the improved global model back
-- Repeat for N rounds until the global model converges
+## Repository Layout
 
-The result: a fraud detection model nearly as accurate as a centralised one, with **zero raw data ever leaving any bank**.
-
----
-
-## 🧠 Concepts Covered
-
-| Concept | Where |
-|---|---|
-| Class imbalance & why accuracy is misleading | Phase 1 |
-| Non-IID data splits (realistic bank heterogeneity) | Phase 1 |
-| AUC-ROC vs AUPRC — which metric matters for fraud | Phase 1 |
-| FedAvg aggregation from scratch | Phase 2 |
-| Mini-batch SGD local training | Phase 2 |
-| Communication rounds vs accuracy trade-off | Phase 2 |
-| FedProx vs FedAvg under non-IID data | Phase 3 (coming) |
-| Differential Privacy — privacy-accuracy trade-off | Phase 3 (coming) |
-
----
-
-## 📁 Project Structure
-
-```
-federated-fraud-detection/
-│
-├── creditcard.csv                   # Dataset (download separately — see below)
-│
-├── phase1_federated_fraud.py        # Data exploration + non-IID split + baseline
-├── phase2_federated_fraud.py        # FedAvg training loop + results
-│
-├── phase1_exploration.png           # Generated: dataset overview charts
-├── phase1_noniid_split.png          # Generated: bank split visualisation
-├── phase1_baseline_results.png      # Generated: centralised model performance
-├── phase2_federated_results.png     # Generated: FL training dashboard
-│
-├── client_data.npy                  # Generated: 3 banks' local datasets
-├── X_test.npy                       # Generated: shared test set features
-├── y_test.npy                       # Generated: shared test set labels
-├── baseline_scores.npy              # Generated: centralised scores to beat
-├── global_model.npy                 # Generated: final FL model weights
-├── fl_history.npy                   # Generated: round-by-round metrics
-│
-└── README.md
+```text
+federated-learning/
+├── creditcard.csv
+├── README.md
+├── findings.md
+├── generate_synthetic_dataset.py
+├── phase1_federated_fraud.py
+├── phase2_federated_fraud.py
+├── phase3_fedprox_dp.py
+├── phase4_stress_test.py
+├── phase5_hardcore_stress.py
+├── phase6_red_team_stress.py
+├── npy_output/
+├── png_output/
+├── stress_output/
+└── synthetic_data/
 ```
 
----
+## Dataset
 
-## 📦 Dataset
+Primary dataset:
+- ULB Credit Card Fraud Detection dataset from Kaggle
+- `284,807` transactions
+- `492` fraud cases
+- Features: `V1` to `V28`, `Time`, `Amount`
+- Target: `Class`
 
-**Credit Card Fraud Detection** by ULB Machine Learning Group
+Expected local file:
+- `creditcard.csv`
 
-| Property | Value |
-|---|---|
-| Source | [Kaggle](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) |
-| Transactions | 284,807 |
-| Fraud cases | 492 (0.17%) |
-| Features | V1–V28 (PCA anonymised) + Time + Amount |
-| Target | `Class` — 0: Legit, 1: Fraud |
+Synthetic dataset support:
+- `generate_synthetic_dataset.py` creates multi-bank synthetic fraud datasets
+- output is written under `synthetic_data/`
+- these files can be used directly by phase 6
 
-### Download
-
-```bash
-# Option 1 — Kaggle CLI
-kaggle datasets download -d mlg-ulb/creditcardfraud
-unzip creditcardfraud.zip
-
-# Option 2 — Manual
-# Go to https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
-# Click Download → place creditcard.csv in this project folder
-```
-
----
-
-## ⚙️ Installation
+## Installation
 
 ```bash
 pip install pandas numpy scikit-learn matplotlib seaborn
 ```
 
-No deep learning frameworks needed — everything is built from scratch with NumPy so every line is transparent and understandable.
+## Recommended Run Order
 
----
-
-## 🚀 Running the Project
-
-### Phase 1 — Data Exploration + Non-IID Split + Centralised Baseline
+### 1. Phase 1: baseline and bank split
 
 ```bash
-python phase1_federated_fraud.py
+python3 phase1_federated_fraud.py
 ```
 
-**What it does:**
-- Loads and explores the dataset (class imbalance, feature distributions)
-- Scales `Time` and `Amount` features (V1–V28 are already PCA-scaled)
-- Splits data across 3 "banks" with non-IID distributions (different time windows + fraud rates)
-- Trains a centralised logistic regression as the baseline to beat
-- Generates 3 visualisation charts
-- Saves `.npy` files for Phase 2
+Outputs:
+- `npy_output/client_data.npy`
+- `npy_output/X_test.npy`
+- `npy_output/y_test.npy`
+- `npy_output/baseline_scores.npy`
+- `png_output/phase1_exploration.png`
+- `png_output/phase1_noniid_split.png`
+- `png_output/phase1_baseline_results.png`
 
-**Expected output:**
-```
-Centralised Baseline to beat in Phase 2:
-  AUC-ROC : ~0.97
-  AUPRC   : ~0.72
-```
-
-**Generated files:**
-```
-phase1_exploration.png       — class imbalance, amount distributions, correlations
-phase1_noniid_split.png      — fraud rate per bank
-phase1_baseline_results.png  — ROC curve, PR curve, confusion matrix
-client_data.npy              — 3 banks' datasets
-X_test.npy / y_test.npy      — held-out test set
-baseline_scores.npy          — scores Phase 2 must beat
-```
-
----
-
-### Phase 2 — Federated Learning with FedAvg
+### 2. Phase 2: FedAvg training
 
 ```bash
-python phase2_federated_fraud.py
+python3 phase2_federated_fraud.py
 ```
 
-**What it does:**
-- Runs 10 federated communication rounds
-- Each round: server broadcasts global model → banks train locally (5 epochs, mini-batch SGD) → server aggregates with FedAvg
-- Tracks global AUC-ROC and AUPRC every round
-- Compares final FL model vs centralised baseline
-- Generates full results dashboard
+Outputs:
+- `npy_output/global_model.npy`
+- `npy_output/fl_history.npy`
+- `png_output/phase2_federated_results.png`
 
-**Expected output:**
-```
-Federated AUC-ROC : close to centralised baseline
-Federated AUPRC   : close to centralised baseline
-Privacy cost      : <X>% AUC reduction
-Data shared       : ZERO raw transactions — only model weights ✅
+### 3. Phase 3: FedProx and differential privacy
+
+```bash
+python3 phase3_fedprox_dp.py
 ```
 
-**Generated files:**
+Output:
+- `png_output/phase3_results.png`
+
+### 4. Phase 4: classical stress test
+
+```bash
+python3 phase4_stress_test.py
 ```
-phase2_federated_results.png  — convergence curves, ROC, PR, loss per bank
-global_model.npy              — final trained FL model
-fl_history.npy                — round-by-round metrics for analysis
+
+Output:
+- `png_output/phase4_stress_test.png`
+
+### 5. Generate large synthetic bank data
+
+```bash
+python3 generate_synthetic_dataset.py --scale 100 --save-combined
 ```
 
----
+Outputs:
+- `synthetic_data/bank_0.csv` ... `bank_4.csv`
+- `synthetic_data/combined_all_banks.csv`
+- `synthetic_data/test_set.csv`
+- `synthetic_data/stressed_label_noise/`
+- `synthetic_data/stressed_feature_shift/`
+- `synthetic_data/stressed_extreme_noniid/`
 
-## 🔬 Key Design Decisions
+Note:
+- this is CPU and disk I/O heavy
+- GPU does not materially help with the current CSV-based generation flow
 
-### Why Logistic Regression?
-Intentionally simple — the goal is to demonstrate the FL framework, not optimise a black-box model. Every gradient computation is visible and understandable.
+### 6. Phase 6: red-team stress testing on synthetic data
 
-### Why Non-IID splits?
-In reality, different banks serve different demographics. Bank 0 (small, suburban) sees rare fraud. Bank 2 (large, urban) sees frequent fraud. Homogeneous splits would be unrealistically easy for FL.
-
-### Why AUPRC over Accuracy?
-With 0.17% fraud, a model predicting "legit" for everything achieves 99.83% accuracy and is completely useless. AUPRC measures precision-recall trade-off across thresholds — what a real fraud team cares about.
-
-### FedAvg — How it works
+```bash
+python3 phase6_red_team_stress.py \
+  --synthetic-dir synthetic_data \
+  --scales 1 10 100 \
+  --rounds 8 \
+  --epochs 2 \
+  --aggregators fedavg coord_median trimmed_mean \
+  --output-prefix phase6_synth_full
 ```
-global_w = Σ (n_k / N) × w_k    for each client k
-```
-Each client's weights are averaged proportionally to how much data it contributed. Clients with more transactions have more influence on the global model.
 
----
+Outputs:
+- `stress_output/phase6_synth_full_results.json`
+- `stress_output/phase6_synth_full_dashboard.png`
+- `stress_output/phase6_synth_full_summary.md`
 
-## 📊 Results
+When `--synthetic-dir synthetic_data` is used, `--scales 1 10 100` means approximately `1%`, `10%`, and `100%` of the prepared synthetic corpus.
 
-| Metric | Centralised | Federated (FL) | Privacy Cost |
-|---|---|---|---|
-| AUC-ROC | ~0.9708 | ~0.97xx | ~0.0x |
-| AUPRC | ~0.7170 | ~0.7xxx | ~0.0x |
+## What Phase 6 Tests
 
-> Raw data never left any bank. Only model weights (30 floats) were communicated each round.
+Phase 6 is the most deployment-oriented script in the repository. It compares aggregation rules under adversarial and failure-heavy conditions.
 
----
+Scenarios include:
+- benign
+- prior shift
+- feature shift
+- label noise
+- missingness and outliers
+- client dropout
+- concept drift
+- sign-flip attacks
+- model-replacement attacks
+- sybil attacks
+- combined full red-team scenario
 
-## 🗺️ Roadmap
+Aggregation rules:
+- `fedavg`
+- `coord_median`
+- `trimmed_mean`
 
-- [x] Phase 1 — Data exploration, non-IID split, centralised baseline
-- [x] Phase 2 — FedAvg training loop with full metrics
-- [ ] Phase 3 — FedProx vs FedAvg (handle non-IID better)
-- [ ] Phase 3 — Differential Privacy (add noise to gradients, show privacy-accuracy curve)
-- [ ] Phase 4 — Byzantine robustness (simulate malicious bank, implement defense)
+Metrics tracked:
+- AUC-ROC
+- AUPRC
+- recall
+- precision
+- false positive rate
+- training loss
+- pass/warn/fail deployment verdict
 
----
+## Current Outputs
 
-## 📚 References
+Generated artifacts already used by this repo are stored in:
+- `npy_output/`
+- `png_output/`
+- `stress_output/`
 
-- McMahan et al. (2017) — [Communication-Efficient Learning of Deep Networks from Decentralized Data](https://arxiv.org/abs/1602.05629) *(the original FedAvg paper)*
-- Li et al. (2020) — [Federated Optimization in Heterogeneous Networks (FedProx)](https://arxiv.org/abs/1812.06127)
-- Dwork et al. (2006) — [Differential Privacy](https://link.springer.com/chapter/10.1007/11681878_14)
-- ULB ML Group — [Credit Card Fraud Detection Dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
+Research-style narrative summary:
+- `findings.md`
 
----
+## Practical Notes
 
-## 👤 Author
+- The repository ignores generated CSVs, NPY files, and stress outputs via `.gitignore`.
+- Large synthetic dataset generation is slow mainly because of CSV writing.
+- If you want faster synthetic pipelines later, the next step is binary output formats such as Parquet or NumPy arrays rather than larger CSV workflows.
+- Phase 6 currently supports both:
+  - on-demand synthetic generation
+  - direct loading from `synthetic_data/`
 
-Built as a major project exploring privacy-preserving machine learning applied to financial fraud detection.
+## References
 
----
+- McMahan et al. (2017), FedAvg
+- Li et al. (2020), FedProx
+- Dwork et al. (2006), Differential Privacy
+- ULB Machine Learning Group credit-card fraud dataset
 
-## 📄 License
+## License
 
-MIT License — free to use, modify, and distribute with attribution.
+MIT
