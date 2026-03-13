@@ -26,7 +26,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # ── change this to your local path ──────────────────────────
-DATA_PATH = "/home/hemanth/Downloads/datasets/creditcard.csv"
+DATA_PATH = "/home/igris/federated-learning/creditcard.csv"
 # ────────────────────────────────────────────────────────────
 
 RANDOM_STATE = 42
@@ -149,9 +149,9 @@ sns.heatmap(corr_sub, ax=ax6, mask=mask, cmap="coolwarm",
 ax6.set_title("Correlation Matrix — Top Features Most Correlated with Fraud",
               fontweight="bold")
 
-plt.savefig("phase1_exploration.png", dpi=150, bbox_inches="tight")
+plt.savefig("png_output/phase1_exploration.png", dpi=150, bbox_inches="tight")
 plt.close()
-print("\n✅ Saved: phase1_exploration.png")
+print("\n✅ Saved: png_output/phase1_exploration.png")
 
 
 # ══════════════════════════════════════════════════════════════
@@ -254,9 +254,9 @@ for cid, (X_c, y_c) in enumerate(client_data):
                 color="white", fontweight="bold")
 
 plt.tight_layout()
-plt.savefig("phase1_noniid_split.png", dpi=150, bbox_inches="tight")
+plt.savefig("png_output/phase1_noniid_split.png", dpi=150, bbox_inches="tight")
 plt.close()
-print("\n✅ Saved: phase1_noniid_split.png")
+print("\n✅ Saved: png_output/phase1_noniid_split.png")
 
 
 # ══════════════════════════════════════════════════════════════
@@ -373,15 +373,15 @@ ax.text(0.5, -0.15, f"TP={tp}  FP={fp}  TN={tn}  FN={fn}",
         transform=ax.transAxes, ha="center", fontsize=9, color="gray")
 
 plt.tight_layout()
-plt.savefig("phase1_baseline_results.png", dpi=150, bbox_inches="tight")
+plt.savefig("png_output/phase1_baseline_results.png", dpi=150, bbox_inches="tight")
 plt.close()
-print("✅ Saved: phase1_baseline_results.png")
+print("✅ Saved: png_output/phase1_baseline_results.png")
 
 # ── Save everything for Phase 2 ──
-np.save("client_data.npy",    np.array(client_data, dtype=object))
-np.save("X_test.npy",         X_test)
-np.save("y_test.npy",         y_test)
-np.save("baseline_scores.npy", baseline_scores)
+np.save("npy_output/client_data.npy",    np.array(client_data, dtype=object))
+np.save("npy_output/X_test.npy",         X_test)
+np.save("npy_output/y_test.npy",         y_test)
+np.save("npy_output/baseline_scores.npy", baseline_scores)
 
 print("\n" + "=" * 65)
 print("  PHASE 1 COMPLETE ✅")

@@ -56,10 +56,10 @@ print(SEPARATOR)
 print("  PHASE 3 — FedProx + Differential Privacy")
 print(SEPARATOR)
 
-client_data     = np.load("client_data.npy",     allow_pickle=True)
-X_test          = np.load("X_test.npy",          allow_pickle=True)
-y_test          = np.load("y_test.npy",          allow_pickle=True)
-baseline_scores = np.load("baseline_scores.npy", allow_pickle=True).item()
+client_data     = np.load("npy_output/client_data.npy",     allow_pickle=True)
+X_test          = np.load("npy_output/X_test.npy",          allow_pickle=True)
+y_test          = np.load("npy_output/y_test.npy",          allow_pickle=True)
+baseline_scores = np.load("npy_output/baseline_scores.npy", allow_pickle=True).item()
 
 NUM_CLIENTS  = len(client_data)
 NUM_FEATURES = client_data[0][0].shape[1]
@@ -468,9 +468,9 @@ for (r, c), cell in table.get_celld().items():
         cell.set_facecolor("#ecf0f1")
 ax7.set_title("Full Results Summary", fontweight="bold", pad=15)
 
-plt.savefig("phase3_results.png", dpi=150, bbox_inches="tight")
+plt.savefig("png_output/phase3_results.png", dpi=150, bbox_inches="tight")
 plt.close()
-print("\n✅ Saved: phase3_results.png")
+print("\n✅ Saved: png_output/phase3_results.png")
 
 
 # ══════════════════════════════════════════════════════════════

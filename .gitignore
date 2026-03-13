@@ -4,3 +4,7 @@
 *.pt
 *.pth
 *.h5
+png_output/
+stress_output/
+synthetic_data/
+synthetic_data_smoke/

@@ -44,10 +44,10 @@ print(SEPARATOR)
 print("  PHASE 2 — FEDERATED LEARNING (FedAvg)")
 print(SEPARATOR)
 
-client_data     = np.load("client_data.npy",    allow_pickle=True)
-X_test          = np.load("X_test.npy",         allow_pickle=True)
-y_test          = np.load("y_test.npy",         allow_pickle=True)
-baseline_scores = np.load("baseline_scores.npy", allow_pickle=True).item()
+client_data     = np.load("npy_output/client_data.npy",    allow_pickle=True)
+X_test          = np.load("npy_output/X_test.npy",         allow_pickle=True)
+y_test          = np.load("npy_output/y_test.npy",         allow_pickle=True)
+baseline_scores = np.load("npy_output/baseline_scores.npy", allow_pickle=True).item()
 
 NUM_CLIENTS = len(client_data)
 NUM_FEATURES = client_data[0][0].shape[1]
@@ -341,13 +341,13 @@ ax5.set_xlabel("Recall"); ax5.set_ylabel("Precision")
 ax5.set_title("Final Precision-Recall Curve", fontweight="bold")
 ax5.legend()
 
-plt.savefig("phase2_federated_results.png", dpi=150, bbox_inches="tight")
+plt.savefig("png_output/phase2_federated_results.png", dpi=150, bbox_inches="tight")
 plt.close()
-print("\n✅ Saved: phase2_federated_results.png")
+print("\n✅ Saved: png_output/phase2_federated_results.png")
 
 # ── Save for Phase 3 ──
-np.save("global_model.npy",  {"w": global_w, "b": global_b})
-np.save("fl_history.npy",    history)
+np.save("npy_output/global_model.npy",  {"w": global_w, "b": global_b})
+np.save("npy_output/fl_history.npy",    history)
 
 print(f"\n{SEPARATOR}")
 print("  PHASE 2 COMPLETE ✅")
